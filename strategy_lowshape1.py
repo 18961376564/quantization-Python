@@ -17,35 +17,35 @@ def sell_total(sell,sell_num):
         for i in range(l):
             sum+=sell[i]*sell_num[i]
         return sum
-def hold(sell_num,close,buy_total):
-    tl=len(close)-1
+def hold(sell_num,close,endrow,buy_total):
     st_tmp=0
     for i in sell_num:
         st_tmp+=i
     hold_num=len(buy_total)-st_tmp
-    hold=close[tl]
+    hold=close[endrow]
     return [hold,hold_num]
 
-def asset(sell,sell_num,close,buy_total):
+def asset(sell,sell_num,close,endrow,buy_total):
     sl=sell_total(sell, sell_num)
-    tl=len(close)-1
     st_tmp=0
     for i in sell_num:
         st_tmp+=i
     hold_num=len(buy_total)-st_tmp
-    hold=close[tl]
+    hold=close[endrow]
     ass=sl+hold*hold_num
     return ass
 
 
 import pandas as pd
-stockname='美诺华.xlsx'
-df=pd.read_excel(stockname,usecols=[3,4,5,6,7],engine='openpyxl')
 
 ##############################设置初始参数#########################################
-# #美诺华下跌周期
-startrow=416
-endrow=497   #最大值为row row=len(df['low'])
+#设置股票
+stockname='中信证券.xlsx'
+df=pd.read_excel(stockname,usecols=[3,4,5,6,7],engine='openpyxl')
+
+# #中信证券下跌周期
+startrow=276
+endrow=332   #最大值为row row=len(df['low'])
 
 # #万科下跌周期
 # startrow=64
@@ -57,7 +57,7 @@ goal_price=buy0*1.1
 buy_gap=0.02   #买入卖出gap
 sell_gap=0.02
 
-todaysell_gap=0.006     #当日收盘价卖出
+todaysell_gap=0.008     #当日收盘价卖出
 ##############################设置初始参数##############################
 
 
@@ -165,12 +165,12 @@ for i in range(startrow,endrow):    #range(开始索引，结束索引）
         # newsell = sell_gap * (1.2+(sp_rate-2)*0.8)
 
         ###策略B 中波动 中信证券
-        # newbuy=buy_gap*1.5
-        # newsell = sell_gap * 1.8
+        newbuy=buy_gap*1.5
+        newsell = sell_gap * 1.8
 
         ###策略C 高波动 万科A、美诺华 夏普5
-        newbuy=buy_gap* 3
-        newsell = sell_gap * 3
+        # newbuy=buy_gap* 3
+        # newsell = sell_gap * 3
 
         buy,buy_total,buy_sum,sell,sell_num,sell_flag,sp_rate,break_flag,selltodaysum=T_strategy(buy, buy_total, buy_sum, sell, sell_num, sell_flag, newbuy, newsell, high, low,close, goal_price, sp_rate,selltodaysum)
         if(break_flag==1):
@@ -186,19 +186,19 @@ for i in range(startrow,endrow):    #range(开始索引，结束索引）
 #print("卖出总计",sell_total(sell,sell_num))
 
 fee=0
-fee=0.005*len(buy_total)+0.00102*asset(sell,sell_num,df['close'],buy_total)
+fee=0.005*len(buy_total)+0.00102*asset(sell,sell_num,df['close'],endrow,buy_total)
 end_index=end_index-startrow
 
 print(stockname,"策略：2级递进T+当日卖出"," 买入T",buy_gap,"   卖出T",sell_gap)
 print("买入总计",buy_sum)
-print("资产总计",asset(sell,sell_num,df['close'],buy_total))
-print("持仓情况",hold(sell_num,df['close'],buy_total))
+print("资产总计",asset(sell,sell_num,df['close'],endrow,buy_total))
+print("持仓情况",hold(sell_num,df['close'],endrow,buy_total))
 print("fee:",fee,"当日卖出次数",selltodaysum)
 
 
-intrest_beforefee=(asset(sell,sell_num,df['close'],buy_total)-buy_sum)/(buy0)
+intrest_beforefee=(asset(sell,sell_num,df['close'],endrow,buy_total)-buy_sum)/(buy0)
 intrest_beforefee=round(intrest_beforefee,4)
-intrest=(asset(sell,sell_num,df['close'],buy_total)-buy_sum-fee)/(buy0)
+intrest=(asset(sell,sell_num,df['close'],endrow,buy_total)-buy_sum-fee)/(buy0)
 ist_weighted=intrest/(sp_rate*0.5)
 intrest=round(intrest,4)
 ist_weighted=round(ist_weighted,4)

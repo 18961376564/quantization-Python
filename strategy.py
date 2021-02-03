@@ -10,37 +10,38 @@ def sell_total(sell,sell_num):
         for i in range(l):
             sum+=sell[i]*sell_num[i]
         return sum
-def hold(sell_num,close,buy_total):
-    tl=len(close)-1
+def hold(sell_num,close,endrow,buy_total):
     st_tmp=0
     for i in sell_num:
         st_tmp+=i
     hold_num=len(buy_total)-st_tmp
-    hold=close[tl]
+    hold=close[endrow]
     return [hold,hold_num]
 
-def asset(sell,sell_num,close,buy_total):
+def asset(sell,sell_num,close,endrow,buy_total):
     sl=sell_total(sell, sell_num)
-    tl=len(close)-1
     st_tmp=0
     for i in sell_num:
         st_tmp+=i
     hold_num=len(buy_total)-st_tmp
-    hold=close[tl]
+    hold=close[endrow]
     ass=sl+hold*hold_num
     return ass
 
 
+
 import pandas as pd
-df=pd.read_excel('美诺华.xlsx',usecols=[3,4,5,6,7],engine='openpyxl')
+df=pd.read_excel('中信证券.xlsx',usecols=[3,4,5,6,7],engine='openpyxl')
    #取某列第i行数据  df[col_name][i]
 
 
 ##############################设置初始参数#########################################
-buy0=35.7
-startrow=438
-endrow=480    #最大值为row row=len(df['low'])
-goal_price=40
+
+startrow=276
+endrow=332   #最大值为row row=len(df['low'])
+buy0=df['high'][startrow]
+goal_price=buy0*1.1
+
 ##############################设置初始参数##############################
 
 buy=list()
@@ -115,14 +116,14 @@ for i in range(startrow,endrow):
 
 
 fee=0
-fee=0.005*len(buy_total)+0.00102*asset(sell,sell_num,df['close'],buy_total)
+fee=0.005*len(buy_total)+0.00102*asset(sell,sell_num,df['close'],endrow,buy_total)
 
 print("买入T",buy_gap,"   卖出T",sell_gap)
 print("买入总计",buy_sum)
-print("资产总计",asset(sell,sell_num,df['close'],buy_total))
-print("持仓情况",hold(sell_num,df['close'],buy_total))
+print("资产总计",asset(sell,sell_num,df['close'],endrow,buy_total))
+print("持仓情况",hold(sell_num,df['close'],endrow,buy_total))
 
-intrest=(asset(sell,sell_num,df['close'],buy_total)-buy_sum)/(30*sp_rate*0.5)
+intrest=(asset(sell,sell_num,df['close'],endrow,buy_total)-buy_sum)/(30*sp_rate*0.5)
 intrest=round(intrest,4)
 end_index=end_index-startrow
 print("fee:",fee)
